@@ -10,6 +10,5 @@ wheels/
 .venv
 
 # Dagster
-storage/
 dagster_home/
 .dagster/
