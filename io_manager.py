@@ -28,10 +28,22 @@ class PickleIOManager(IOManager):
 
     def handle_output(self, context, obj):
         """Save output using pickle"""
+        # Save with op name
         filepath = self._get_path(context)
         with open(filepath, "wb") as f:
             pickle.dump(obj, f)
         context.log.info(f"Saved to {filepath}")
+
+        # Also save with asset name if this is an asset
+        try:
+            asset_name = context.asset_key.path[-1]
+            if asset_name != context.step_key.split(".")[-1]:
+                asset_filepath = self.base_dir / f"{asset_name}.pickle"
+                with open(asset_filepath, "wb") as f:
+                    pickle.dump(obj, f)
+                context.log.info(f"Also saved to {asset_filepath}")
+        except:
+            pass
 
     def load_input(self, context):
         """Load input using pickle"""
