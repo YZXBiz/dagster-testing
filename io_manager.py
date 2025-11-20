@@ -20,14 +20,10 @@ class PickleIOManager(IOManager):
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_path(self, context) -> Path:
-        """Generate file path based on op/asset name"""
-        # For ops inside graph_assets, use step_key; for assets, use asset_key
-        try:
-            name = context.asset_key.path[-1]
-        except:
-            # For ops, extract just the op name (last part of step_key)
-            # e.g. "simple_pipeline.load_data" -> "load_data"
-            name = context.step_key.split(".")[-1]
+        """Generate file path based on op name"""
+        # Always use the op name from step_key
+        # e.g. "simple_pipeline.process_data_big_op" -> "process_data_big_op"
+        name = context.step_key.split(".")[-1]
         return self.base_dir / f"{name}.pickle"
 
     def handle_output(self, context, obj):
