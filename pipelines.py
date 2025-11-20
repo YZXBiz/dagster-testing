@@ -1,56 +1,43 @@
 """
-Dagster pipelines - simple pattern: small ops called by big op
+Dagster pipelines - big op calling small ops
 """
 from dagster import op, graph_asset, Definitions
 from io_manager import pickle_io_manager
 
 
-# Small helper functions
-def calc_stats(data):
-    return {"sum": sum(data), "mean": sum(data) / len(data)}
-
-
-def normalize(data, mean):
-    return [x - mean for x in data]
-
-
-def filter_data(data):
-    return [x for x in data if abs(x) <= 2.0]
-
-
-# Small ops wrapping the functions
+# Small ops
 @op
 def calculate_stats_op(data):
-    return calc_stats(data)
+    return {"sum": sum(data), "mean": sum(data) / len(data)}
 
 
 @op
 def normalize_op(data, mean):
-    return normalize(data, mean)
+    return [x - mean for x in data]
 
 
 @op
 def filter_op(data):
-    return filter_data(data)
+    return [x for x in data if abs(x) <= 2.0]
 
 
-# Big op that calls the helper functions
+# Big op that calls the small ops
 @op
 def process_data_big_op(raw_data):
     """
-    One big op that calls helper functions internally.
-    Only this op's output gets persisted.
+    Big op that calls small ops directly.
+    Testing: will the small op outputs be persisted?
     """
     print(f"Raw data: {raw_data}")
 
-    # Call the helper functions (not the ops)
-    stats = calc_stats(raw_data)
+    # Call the small ops
+    stats = calculate_stats_op(raw_data)
     print(f"Stats: {stats}")
 
-    normalized = normalize(raw_data, stats["mean"])
+    normalized = normalize_op(raw_data, stats["mean"])
     print(f"Normalized: {normalized}")
 
-    filtered = filter_data(normalized)
+    filtered = filter_op(normalized)
     print(f"Filtered: {filtered}")
 
     return {"stats": stats, "result": filtered}

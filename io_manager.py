@@ -25,8 +25,9 @@ class PickleIOManager(IOManager):
         try:
             name = context.asset_key.path[-1]
         except:
-            # For ops, use step_key which includes the op name
-            name = context.step_key.replace(".", "_")
+            # For ops, extract just the op name (last part of step_key)
+            # e.g. "simple_pipeline.load_data" -> "load_data"
+            name = context.step_key.split(".")[-1]
         return self.base_dir / f"{name}.pickle"
 
     def handle_output(self, context, obj):
